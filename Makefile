@@ -8,6 +8,8 @@ endif
 
 include $(DEVKITARM)/gba_rules
 
+bMB		:= 0	# Multiboot build
+
 #---------------------------------------------------------------------------------
 # the LIBGBA path is defined in gba_rules, but we have to define LIBTONC ourselves
 #---------------------------------------------------------------------------------
@@ -25,7 +27,12 @@ LIBTONC := $(DEVKITPRO)/libtonc
 # the makefile is found
 #
 #---------------------------------------------------------------------------------
-TARGET		:= $(notdir $(CURDIR))
+# --- Multiboot ? ---
+ifeq ($(strip $(bMB)), 1)
+	TARGET	:= $(notdir $(CURDIR))_mb
+else
+	TARGET	:= $(notdir $(CURDIR))
+endif
 BUILD		:= build
 SOURCES		:= source
 INCLUDES	:= include
@@ -126,6 +133,11 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	mv $(OUTPUT).gba tmp.gba
+	./pad16.sh tmp.gba
+	mv tmp.gba $(OUTPUT).gba
+#	./check_romsize.sh $(OUTPUT).gba
+
 
 #---------------------------------------------------------------------------------
 clean:
